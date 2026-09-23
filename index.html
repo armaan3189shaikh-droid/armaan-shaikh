@@ -174,17 +174,32 @@
       }
       #barcodeGridContainer {
         display: grid !important;
-        grid-template-columns: repeat(2, minmax(180px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8mm;
         width: 100%;
       }
-      #barcodeGridContainer > div {
+      #barcodeGridContainer > .barcode-label {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 42mm !important;
+        padding: 5mm !important;
         page-break-inside: avoid;
         break-inside: avoid;
         box-shadow: none !important;
         border: 1px solid #cbd5e1 !important;
         background: white !important;
         color: black !important;
+      }
+      #barcodeGridContainer .barcode-label svg {
+        width: 100% !important;
+        max-width: 72mm !important;
+        height: auto !important;
+      }
+      #barcodeGridContainer .barcode-label h4,
+      #barcodeGridContainer .barcode-label span,
+      #barcodeGridContainer .barcode-label div {
+        overflow-wrap: anywhere !important;
+        word-break: break-word !important;
       }
       svg {
         max-width: 100% !important;
@@ -846,7 +861,7 @@
           </button>
         </div>
 
-        <div id="barcodeGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div id="barcodeGridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <!-- Injected via JS -->
         </div>
       </section>
@@ -1173,6 +1188,6 @@
   </div>
 
   <!-- Application Logic JavaScript -->
-  <script src="app.js?v=20260923-3"></script>
+  <script src="app.js?v=20260923-4"></script>
 </body>
 </html>

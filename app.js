@@ -1693,7 +1693,7 @@ function renderBarcodes() {
   }
 
   container.innerHTML = currentItems.map((item, idx) => `
-    <div class="p-4 rounded-xl bg-white text-slate-900 border border-slate-200 shadow-md flex flex-col items-center justify-between text-center">
+    <div class="barcode-label p-4 rounded-xl bg-white text-slate-900 border border-slate-200 shadow-md flex flex-col items-center justify-between text-center overflow-hidden">
       <div class="w-full text-left border-b border-slate-200 pb-2 mb-2">
         <h4 class="font-bold text-xs truncate">${item.name}</h4>
         <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-0.5 gap-2">
@@ -1719,10 +1719,10 @@ function renderBarcodes() {
       try {
         JsBarcode(`#barcode-${idx}`, item.sku, {
           format: "CODE128",
-          width: 1.6,
-          height: 42,
+          width: 1.25,
+          height: 38,
           displayValue: true,
-          fontSize: 11,
+          fontSize: 9,
           margin: 0,
           textMargin: 2
         });
