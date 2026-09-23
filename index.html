@@ -217,7 +217,7 @@
   </style>
 </head>
 
-<body class="h-full bg-[#070b12] text-slate-100 flex overflow-hidden font-sans select-none">
+<body class="h-full min-h-0 bg-[#070b12] text-slate-100 flex overflow-hidden font-sans select-none">
 
   <!-- ================= AUTHENTICATION / LOGIN OVERLAY ================= -->
   <div id="authOverlay" class="fixed inset-0 z-[100] bg-[#070b12] flex items-center justify-center p-4 overflow-y-auto">
@@ -441,7 +441,7 @@
   </aside>
 
   <!-- ================= MAIN CONTENT AREA ================= -->
-  <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
+  <main class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden bg-slate-950">
     
     <!-- Top Header Bar -->
     <header class="h-16 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between gap-2 shrink-0 glass-panel z-20">
@@ -494,7 +494,7 @@
     </header>
 
     <!-- Content Sections Wrapper -->
-    <div class="flex-1 overflow-y-auto p-6 space-y-6" id="viewContainer">
+    <div class="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-6 space-y-6" id="viewContainer" style="-webkit-overflow-scrolling: touch;">
 
       <!-- ================= 1. DASHBOARD VIEW ================= -->
       <section id="view-dashboard" class="space-y-6">
