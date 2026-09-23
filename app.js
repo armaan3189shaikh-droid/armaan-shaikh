@@ -19,6 +19,24 @@ let companySettings = {
 let categoryChartInstance = null;
 let movementChartInstance = null;
 
+const firebaseConfig = {
+  apiKey: "AIzaSyBzn3xYgL5zBg3RC6eCxrzNd9txs-8NZ68",
+  authDomain: "apex-inventory-pro.firebaseapp.com",
+  projectId: "apex-inventory-pro",
+  storageBucket: "apex-inventory-pro.firebasestorage.app",
+  messagingSenderId: "961139741730",
+  appId: "1:961139741730:web:07a496dd10c64f7b19267b",
+  measurementId: "G-XQ6D8F4130"
+};
+
+let cloudDb = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  cloudDb = firebase.firestore();
+} catch (error) {
+  console.warn("Cloud storage unavailable; using local storage only.", error);
+}
+
 const AUTH_STORAGE_KEY = "apex_inventory_auth";
 const USERS_STORAGE_KEY = "apex_inventory_users";
 const VALID_CREDENTIALS = {
@@ -256,7 +274,22 @@ function dbGetAll(storeName) {
     const tx = db.transaction(storeName, "readonly");
     const store = tx.objectStore(storeName);
     const req = store.getAll();
-    req.onsuccess = () => resolve(req.result || []);
+    req.onsuccess = async () => {
+      const localData = req.result || [];
+      if (!cloudDb) {
+        resolve(localData);
+        return;
+      }
+
+      try {
+        const snapshot = await cloudDb.collection(storeName).get();
+        const cloudData = snapshot.docs.map(doc => doc.data());
+        resolve(cloudData.length > 0 ? cloudData : localData);
+      } catch (error) {
+        console.warn(`Cloud read failed for ${storeName}; using local data.`, error);
+        resolve(localData);
+      }
+    };
     req.onerror = () => reject(req.error);
   });
 }
@@ -266,7 +299,18 @@ function dbPut(storeName, data) {
     const tx = db.transaction(storeName, "readwrite");
     const store = tx.objectStore(storeName);
     const req = store.put(data);
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = async () => {
+      if (storeName === "transactions" && !data.id) data.id = req.result;
+      if (cloudDb) {
+        try {
+          const cloudId = storeName === "items" ? data.sku : storeName === "settings" ? data.key : String(data.id);
+          await cloudDb.collection(storeName).doc(cloudId).set(data);
+        } catch (error) {
+          console.warn(`Cloud write failed for ${storeName}; local data is still saved.`, error);
+        }
+      }
+      resolve(req.result);
+    };
     req.onerror = () => reject(req.error);
   });
 }
@@ -276,7 +320,16 @@ function dbDelete(storeName, key) {
     const tx = db.transaction(storeName, "readwrite");
     const store = tx.objectStore(storeName);
     const req = store.delete(key);
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = async () => {
+      if (cloudDb) {
+        try {
+          await cloudDb.collection(storeName).doc(String(key)).delete();
+        } catch (error) {
+          console.warn(`Cloud delete failed for ${storeName}; local data is deleted.`, error);
+        }
+      }
+      resolve(req.result);
+    };
     req.onerror = () => reject(req.error);
   });
 }
@@ -286,7 +339,19 @@ function dbClear(storeName) {
     const tx = db.transaction(storeName, "readwrite");
     const store = tx.objectStore(storeName);
     const req = store.clear();
-    req.onsuccess = () => resolve(true);
+    req.onsuccess = async () => {
+      if (cloudDb) {
+        try {
+          const snapshot = await cloudDb.collection(storeName).get();
+          const batch = cloudDb.batch();
+          snapshot.docs.forEach(doc => batch.delete(doc.ref));
+          await batch.commit();
+        } catch (error) {
+          console.warn(`Cloud clear failed for ${storeName}; local data is cleared.`, error);
+        }
+      }
+      resolve(true);
+    };
     req.onerror = () => reject(req.error);
   });
 }
