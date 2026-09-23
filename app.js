@@ -596,6 +596,8 @@ async function refreshAllData() {
 }
 
 function switchTab(tabId) {
+  closeSidebarOnMobile();
+
   // Hide all sections
   const sections = ["dashboard", "inventory", "transactions", "lowstock", "excelcenter", "barcodes", "settings"];
   sections.forEach(id => {
@@ -634,6 +636,16 @@ function switchTab(tabId) {
   if (tabId === "dashboard") {
     setTimeout(renderCharts, 100);
   }
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("mainSidebar");
+  if (sidebar) sidebar.classList.toggle("-translate-x-full");
+}
+
+function closeSidebarOnMobile() {
+  const sidebar = document.getElementById("mainSidebar");
+  if (sidebar && window.innerWidth < 1024) sidebar.classList.add("-translate-x-full");
 }
 
 // ================= 4. DASHBOARD & ANALYTICS =================
