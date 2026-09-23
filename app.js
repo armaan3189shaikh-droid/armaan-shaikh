@@ -556,17 +556,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     await initDatabase();
-    await loadSettings();
 
     const auth = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || "null");
     if (auth && auth.username && auth.role) {
-      setAuthState(true);
-      const headerUser = document.getElementById("headerUsernameDisplay");
-      if (headerUser) headerUser.textContent = auth.username.charAt(0).toUpperCase() + auth.username.slice(1);
+      let cloudSessionReady = true;
+      if (cloudAuth && !cloudAuth.currentUser) {
+        const isBuiltInUser = Object.prototype.hasOwnProperty.call(VALID_CREDENTIALS, auth.username.toLowerCase());
+        if (isBuiltInUser) {
+          await ensureAnonymousCloudSession().catch(error => {
+            cloudSessionReady = false;
+            console.warn("Could not restore online session.", error);
+          });
+        } else {
+          cloudSessionReady = false;
+        }
+      }
+
+      if (cloudSessionReady) {
+        setAuthState(true);
+        const headerUser = document.getElementById("headerUsernameDisplay");
+        if (headerUser) headerUser.textContent = auth.username.charAt(0).toUpperCase() + auth.username.slice(1);
+      } else {
+        clearSession();
+        setAuthState(false);
+        quickFillCredentials();
+      }
     } else {
       setAuthState(false);
       quickFillCredentials();
     }
+
+    await loadSettings();
 
     if (!localStorage.getItem("apex_real_clean_init_v2")) {
       await dbClear("items");
