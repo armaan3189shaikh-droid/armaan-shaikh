@@ -397,19 +397,19 @@
   <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-950">
     
     <!-- Top Header Bar -->
-    <header class="h-16 border-b border-slate-800/80 px-6 flex items-center justify-between shrink-0 glass-panel z-20">
-      <div class="flex items-center gap-4">
-        <button id="toggleSidebarBtn" onclick="toggleSidebar()" class="text-slate-400 hover:text-white lg:hidden" aria-label="Toggle navigation menu">
+    <header class="h-16 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between gap-2 shrink-0 glass-panel z-20">
+      <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+        <button id="toggleSidebarBtn" onclick="toggleSidebar()" class="shrink-0 p-2 text-slate-400 hover:text-white lg:hidden" aria-label="Toggle navigation menu">
           <i class="fa-solid fa-bars text-lg"></i>
         </button>
-        <div class="flex items-center gap-2">
-          <h2 id="pageTitle" class="font-display font-bold text-lg text-white">Executive Dashboard</h2>
-          <span id="currentDateBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60 font-mono"></span>
+        <div class="flex items-center gap-2 min-w-0">
+          <h2 id="pageTitle" class="font-display font-bold text-base sm:text-lg text-white truncate">Executive Dashboard</h2>
+          <span id="currentDateBadge" class="hidden sm:inline text-xs px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/60 font-mono whitespace-nowrap"></span>
         </div>
       </div>
 
       <!-- Top Right Controls -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1 sm:gap-3 shrink-0">
         <!-- Global Quick Search Bar -->
         <div class="relative hidden sm:block w-72">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -419,7 +419,7 @@
         </div>
 
         <!-- Add New Item Button -->
-        <button onclick="openItemModal()" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition shadow-lg shadow-amber-500/20">
+        <button onclick="openItemModal()" class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition shadow-lg shadow-amber-500/20">
           <i class="fa-solid fa-plus"></i>
           <span>Add SKU</span>
         </button>
