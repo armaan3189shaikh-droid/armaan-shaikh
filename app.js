@@ -30,8 +30,10 @@ const firebaseConfig = {
 };
 
 let cloudDb = null;
+let cloudAuth = null;
 try {
   firebase.initializeApp(firebaseConfig);
+  cloudAuth = firebase.auth();
   cloudDb = firebase.firestore();
 } catch (error) {
   console.warn("Cloud storage unavailable; using local storage only.", error);
@@ -62,8 +64,12 @@ function getUserByUsername(username) {
   return getSavedUsers().find(user => (user.username || "").toLowerCase() === normalized);
 }
 
+function usernameEmail(username) {
+  return `${(username || "").trim().toLowerCase()}@apex-inventory-pro.firebaseapp.com`;
+}
+
 function saveSession(username, password, role, remember = true) {
-  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ username, password, role, remember }));
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ username, role, remember }));
 }
 
 function clearSession() {
@@ -105,7 +111,7 @@ function togglePasswordVisibility() {
   icon.classList.toggle("fa-eye-slash", hidden);
 }
 
-function handleCreateUser(event) {
+async function handleCreateUser(event) {
   event.preventDefault();
 
   const username = document.getElementById("signupUsername")?.value.trim();
@@ -118,8 +124,8 @@ function handleCreateUser(event) {
     return;
   }
 
-  if (password.length < 4) {
-    Swal.fire({ icon: "error", title: "Password too short", text: "Use at least 4 characters.", background: "#0f172a", color: "#f8fafc", confirmButtonColor: "#ef4444" });
+  if (password.length < 6) {
+    Swal.fire({ icon: "error", title: "Password too short", text: "Use at least 6 characters.", background: "#0f172a", color: "#f8fafc", confirmButtonColor: "#ef4444" });
     return;
   }
 
@@ -137,8 +143,19 @@ function handleCreateUser(event) {
     return;
   }
 
-  users.push({ username: normalizedUsername, password, role });
-  saveSavedUsers(users);
+  if (cloudAuth && cloudDb) {
+    try {
+      const credential = await cloudAuth.createUserWithEmailAndPassword(usernameEmail(normalizedUsername), password);
+      await cloudDb.collection("users").doc(credential.user.uid).set({ username: normalizedUsername, role });
+    } catch (error) {
+      const message = error.code === "auth/email-already-in-use" ? "This username is already registered." : error.message;
+      Swal.fire({ icon: "error", title: "Account creation failed", text: message, background: "#0f172a", color: "#f8fafc", confirmButtonColor: "#ef4444" });
+      return;
+    }
+  } else {
+    users.push({ username: normalizedUsername, password, role });
+    saveSavedUsers(users);
+  }
 
   document.getElementById("signupForm")?.reset();
   const panel = document.getElementById("signupPanel");
@@ -158,7 +175,7 @@ function handleCreateUser(event) {
   });
 }
 
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
 
   const username = document.getElementById("loginUsername")?.value.trim();
@@ -177,9 +194,25 @@ function handleLogin(event) {
     return;
   }
 
+  if (cloudAuth && !Object.prototype.hasOwnProperty.call(VALID_CREDENTIALS, username.toLowerCase())) {
+    try {
+      const credential = await cloudAuth.signInWithEmailAndPassword(usernameEmail(username), password);
+      const profile = await cloudDb.collection("users").doc(credential.user.uid).get();
+      const profileData = profile.exists ? profile.data() : { username, role };
+      saveSession(profileData.username, "", profileData.role || role, true);
+      setAuthState(true);
+      const headerUser = document.getElementById("headerUsernameDisplay");
+      if (headerUser) headerUser.textContent = profileData.username.charAt(0).toUpperCase() + profileData.username.slice(1);
+      Swal.fire({ icon: "success", title: "Login Successful", text: `Welcome ${profileData.username}.`, background: "#0f172a", color: "#f8fafc", timer: 1200, showConfirmButton: false });
+      return;
+    } catch (error) {
+      console.warn("Firebase login failed; checking local account.", error);
+    }
+  }
+
   const savedUser = getUserByUsername(username);
   if (savedUser && savedUser.password === password) {
-    saveSession(savedUser.username, savedUser.password, savedUser.role, true);
+    saveSession(savedUser.username, "", savedUser.role, true);
     setAuthState(true);
     const headerUser = document.getElementById("headerUsernameDisplay");
     if (headerUser) headerUser.textContent = savedUser.username.charAt(0).toUpperCase() + savedUser.username.slice(1);
@@ -211,6 +244,7 @@ function handleLogin(event) {
 }
 
 function handleLogout() {
+  if (cloudAuth) cloudAuth.signOut().catch(error => console.warn("Firebase logout failed.", error));
   clearSession();
   const form = document.getElementById("loginForm");
   if (form) form.reset();
@@ -527,7 +561,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadSettings();
 
     const auth = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || "null");
-    if (auth && auth.username && auth.password && auth.role) {
+    if (auth && auth.username && auth.role) {
       setAuthState(true);
       const headerUser = document.getElementById("headerUsernameDisplay");
       if (headerUser) headerUser.textContent = auth.username.charAt(0).toUpperCase() + auth.username.slice(1);
