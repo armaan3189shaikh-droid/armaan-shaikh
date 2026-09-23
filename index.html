@@ -98,122 +98,77 @@
       }
     }
 
-    /* Print Styles for Delivery Challan / Invoice / Barcodes */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #view-barcodes,
-      #view-barcodes *,
-      #barcodeGridContainer,
-      #barcodeGridContainer *,
-      main,
-      main *,
-      #printableArea,
-      #printableArea * {
-        visibility: visible !important;
-      }
-      #view-barcodes,
-      main,
-      #viewContainer,
-      #barcodesPrintSheet {
-        display: block !important;
-        visibility: visible !important;
-      }
-      #view-barcodes {
-        position: absolute !important;
-        left: 0;
-        top: 0;
-        width: 100%;
-        background: white !important;
-        color: black !important;
-        padding: 0 !important;
-      }
-      #mainSidebar,
-      header,
-      #view-dashboard,
-      #view-inventory,
-      #view-transactions,
-      #view-lowstock,
-      #view-excelcenter,
-      #view-settings,
-      #authOverlay {
-        display: none !important;
-      }
-      #challanModal {
-        display: block !important;
-        position: absolute !important;
-        inset: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        padding: 0 !important;
-        overflow: visible !important;
-        background: white !important;
-      }
-      #challanModal > div {
-        width: 100% !important;
-        max-width: none !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        overflow: visible !important;
-      }
-      #printableArea {
-        width: 100% !important;
-        padding: 10mm !important;
-        color: #0f172a !important;
-      }
-      #printableArea table {
-        table-layout: fixed !important;
-        font-size: 9px !important;
-      }
-      #printableArea th,
-      #printableArea td {
-        padding: 6px !important;
-        overflow-wrap: anywhere !important;
-      }
-      #barcodeGridContainer {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8mm;
-        width: 100%;
-      }
-      #barcodeGridContainer > .barcode-label {
-        width: 100% !important;
-        min-width: 0 !important;
-        min-height: 42mm !important;
-        padding: 5mm !important;
-        page-break-inside: avoid;
-        break-inside: avoid;
-        box-shadow: none !important;
-        border: 1px solid #cbd5e1 !important;
-        background: white !important;
-        color: black !important;
-      }
-      #barcodeGridContainer .barcode-label svg {
-        width: 100% !important;
-        max-width: 72mm !important;
-        height: auto !important;
-      }
-      #barcodeGridContainer .barcode-label h4,
-      #barcodeGridContainer .barcode-label span,
-      #barcodeGridContainer .barcode-label div {
-        overflow-wrap: anywhere !important;
-        word-break: break-word !important;
-      }
-      svg {
-        max-width: 100% !important;
-        height: auto !important;
-        display: block !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      @page {
-        size: A4 portrait;
-        margin: 10mm;
-      }
-    }
+  /* Print Styles for Delivery Challan / Invoice / Barcodes */
+@media print {
+
+  /* Hide everything by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show ONLY barcode labels */
+  #barcodeGridContainer,
+  #barcodeGridContainer * {
+    visibility: visible !important;
+  }
+
+  /* Position barcode sheet at the top of the printed page */
+  #barcodeGridContainer {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8mm !important;
+
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Individual barcode label */
+  #barcodeGridContainer > .barcode-label {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 42mm !important;
+
+    padding: 5mm !important;
+
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+
+    background: white !important;
+    color: black !important;
+
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Barcode */
+  #barcodeGridContainer .barcode-label svg {
+    width: 100% !important;
+    max-width: 72mm !important;
+    height: auto !important;
+  }
+
+  /* Prevent text overflow */
+  #barcodeGridContainer .barcode-label h4,
+  #barcodeGridContainer .barcode-label span,
+  #barcodeGridContainer .barcode-label div {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+}
   </style>
 </head>
 
