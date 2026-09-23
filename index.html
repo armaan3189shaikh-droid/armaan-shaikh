@@ -140,6 +140,38 @@
       #authOverlay {
         display: none !important;
       }
+      #challanModal {
+        display: block !important;
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: white !important;
+      }
+      #challanModal > div {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+      }
+      #printableArea {
+        width: 100% !important;
+        padding: 10mm !important;
+        color: #0f172a !important;
+      }
+      #printableArea table {
+        table-layout: fixed !important;
+        font-size: 9px !important;
+      }
+      #printableArea th,
+      #printableArea td {
+        padding: 6px !important;
+        overflow-wrap: anywhere !important;
+      }
       #barcodeGridContainer {
         display: grid !important;
         grid-template-columns: repeat(2, minmax(180px, 1fr));
@@ -1074,15 +1106,15 @@
       </div>
 
       <!-- Printable Area -->
-      <div id="printableArea" class="p-8 space-y-6">
+      <div id="printableArea" class="p-4 sm:p-8 space-y-6">
         <!-- Header -->
-        <div class="flex justify-between items-start border-b-2 border-slate-900 pb-4">
+        <div class="flex flex-col sm:flex-row sm:justify-between gap-4 items-start border-b-2 border-slate-900 pb-4">
           <div>
             <h1 id="challanCompanyName" class="font-display font-extrabold text-2xl tracking-tight text-slate-900">AIRTECH PRO</h1>
             <p id="challanCompanyAddress" class="text-xs text-slate-600 max-w-sm mt-1">Industrial Estate, Phase II, Pune, Maharashtra - 411001</p>
             <p class="text-xs text-slate-600 font-medium">GSTIN: <span id="challanGST">27AAAAA0000A1Z5</span> | Phone: <span id="challanPhone">+91 98765 43210</span></p>
           </div>
-          <div class="text-right">
+          <div class="text-left sm:text-right">
             <div id="challanTypeBadge" class="inline-block px-3 py-1 bg-slate-900 text-white font-extrabold text-xs rounded uppercase tracking-wider mb-2">
               DELIVERY CHALLAN
             </div>
@@ -1092,7 +1124,7 @@
         </div>
 
         <!-- Party Info Grid -->
-        <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
           <div>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">CONSIGNEE / CUSTOMER DETAILS</p>
             <h4 id="challanCustomerName" class="font-bold text-sm text-slate-900">M/s. ABC Industries</h4>
@@ -1123,13 +1155,13 @@
         </table>
 
         <!-- Signatures & Declarations -->
-        <div class="pt-12 grid grid-cols-2 gap-8 text-xs text-slate-600">
+        <div class="pt-12 grid grid-cols-1 sm:grid-cols-2 gap-8 text-xs text-slate-600">
           <div>
             <div class="border-t border-slate-400 pt-2 text-center w-48">
               Receiver's Signature & Stamp
             </div>
           </div>
-          <div class="flex justify-end">
+          <div class="flex justify-start sm:justify-end">
             <div class="border-t border-slate-400 pt-2 text-center w-48 font-semibold text-slate-900">
               For AIRTECH PRO<br>
               <span class="text-[10px] font-normal text-slate-500">Authorized Signatory</span>
