@@ -303,90 +303,77 @@ function initDatabase() {
 }
 
 // DB Helper Functions
-function dbGetAll(storeName) {
+async function getLocalData(storeName) {
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readonly");
-    const store = tx.objectStore(storeName);
-    const req = store.getAll();
-    req.onsuccess = async () => {
-      const localData = req.result || [];
-      if (!cloudDb) {
-        resolve(localData);
-        return;
-      }
-
-      try {
-        const snapshot = await cloudDb.collection(storeName).get();
-        const cloudData = snapshot.docs.map(doc => doc.data());
-        resolve(cloudData.length > 0 ? cloudData : localData);
-      } catch (error) {
-        console.warn(`Cloud read failed for ${storeName}; using local data.`, error);
-        resolve(localData);
-      }
-    };
-    req.onerror = () => reject(req.error);
+    const request = db.transaction(storeName, "readonly").objectStore(storeName).getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
   });
 }
 
-function dbPut(storeName, data) {
+async function dbGetAll(storeName) {
+  if (cloudDb) {
+    try {
+      const snapshot = await cloudDb.collection(storeName).get();
+      return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+      console.warn(`Online read failed for ${storeName}; using temporary local cache.`, error);
+    }
+  }
+  return getLocalData(storeName);
+}
+
+async function dbPut(storeName, data) {
+  if (storeName === "transactions" && !data.id) data.id = Date.now();
+  const cloudId = storeName === "items" ? data.sku : storeName === "settings" ? data.key : String(data.id);
+
+  if (cloudDb) {
+    try {
+      await cloudDb.collection(storeName).doc(cloudId).set(data);
+    } catch (error) {
+      console.warn(`Online write failed for ${storeName}; saving to temporary local cache.`, error);
+    }
+  }
+
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const store = tx.objectStore(storeName);
-    const req = store.put(data);
-    req.onsuccess = async () => {
-      if (storeName === "transactions" && !data.id) data.id = req.result;
-      if (cloudDb) {
-        try {
-          const cloudId = storeName === "items" ? data.sku : storeName === "settings" ? data.key : String(data.id);
-          await cloudDb.collection(storeName).doc(cloudId).set(data);
-        } catch (error) {
-          console.warn(`Cloud write failed for ${storeName}; local data is still saved.`, error);
-        }
-      }
-      resolve(req.result);
-    };
-    req.onerror = () => reject(req.error);
+    const request = db.transaction(storeName, "readwrite").objectStore(storeName).put(data);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 }
 
-function dbDelete(storeName, key) {
+async function dbDelete(storeName, key) {
+  if (cloudDb) {
+    try {
+      await cloudDb.collection(storeName).doc(String(key)).delete();
+    } catch (error) {
+      console.warn(`Online delete failed for ${storeName}; deleting from local cache.`, error);
+    }
+  }
+
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const store = tx.objectStore(storeName);
-    const req = store.delete(key);
-    req.onsuccess = async () => {
-      if (cloudDb) {
-        try {
-          await cloudDb.collection(storeName).doc(String(key)).delete();
-        } catch (error) {
-          console.warn(`Cloud delete failed for ${storeName}; local data is deleted.`, error);
-        }
-      }
-      resolve(req.result);
-    };
-    req.onerror = () => reject(req.error);
+    const request = db.transaction(storeName, "readwrite").objectStore(storeName).delete(key);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
   });
 }
 
-function dbClear(storeName) {
+async function dbClear(storeName) {
+  if (cloudDb) {
+    try {
+      const snapshot = await cloudDb.collection(storeName).get();
+      const batch = cloudDb.batch();
+      snapshot.docs.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+    } catch (error) {
+      console.warn(`Online clear failed for ${storeName}; clearing local cache.`, error);
+    }
+  }
+
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const store = tx.objectStore(storeName);
-    const req = store.clear();
-    req.onsuccess = async () => {
-      if (cloudDb) {
-        try {
-          const snapshot = await cloudDb.collection(storeName).get();
-          const batch = cloudDb.batch();
-          snapshot.docs.forEach(doc => batch.delete(doc.ref));
-          await batch.commit();
-        } catch (error) {
-          console.warn(`Cloud clear failed for ${storeName}; local data is cleared.`, error);
-        }
-      }
-      resolve(true);
-    };
-    req.onerror = () => reject(req.error);
+    const request = db.transaction(storeName, "readwrite").objectStore(storeName).clear();
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => reject(request.error);
   });
 }
 
