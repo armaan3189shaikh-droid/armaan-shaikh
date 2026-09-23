@@ -68,6 +68,12 @@ function usernameEmail(username) {
   return `${(username || "").trim().toLowerCase()}@apex-inventory-pro.firebaseapp.com`;
 }
 
+async function ensureAnonymousCloudSession() {
+  if (cloudAuth && !cloudAuth.currentUser) {
+    await cloudAuth.signInAnonymously();
+  }
+}
+
 function saveSession(username, password, role, remember = true) {
   localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ username, role, remember }));
 }
@@ -212,8 +218,10 @@ async function handleLogin(event) {
 
   const savedUser = getUserByUsername(username);
   if (savedUser && savedUser.password === password) {
+    if (cloudAuth) await ensureAnonymousCloudSession().catch(error => console.warn("Anonymous cloud login failed.", error));
     saveSession(savedUser.username, "", savedUser.role, true);
     setAuthState(true);
+    await refreshAllData();
     const headerUser = document.getElementById("headerUsernameDisplay");
     if (headerUser) headerUser.textContent = savedUser.username.charAt(0).toUpperCase() + savedUser.username.slice(1);
     Swal.fire({ icon: "success", title: "Login Successful", text: `Welcome ${savedUser.username}.`, background: "#0f172a", color: "#f8fafc", timer: 1200, showConfirmButton: false });
@@ -225,8 +233,10 @@ async function handleLogin(event) {
     (username.toLowerCase() === "admin" && password === VALID_CREDENTIALS.admin);
 
   if (isValid) {
+    if (cloudAuth) await ensureAnonymousCloudSession().catch(error => console.warn("Anonymous cloud login failed.", error));
     saveSession(username, password, role, true);
     setAuthState(true);
+    await refreshAllData();
     const headerUser = document.getElementById("headerUsernameDisplay");
     if (headerUser) headerUser.textContent = username.charAt(0).toUpperCase() + username.slice(1);
     Swal.fire({ icon: "success", title: "Login Successful", text: `Welcome ${username}.`, background: "#0f172a", color: "#f8fafc", timer: 1200, showConfirmButton: false });
