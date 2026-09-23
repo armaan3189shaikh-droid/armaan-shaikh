@@ -207,6 +207,7 @@ async function handleLogin(event) {
       const profileData = profile.exists ? profile.data() : { username, role };
       saveSession(profileData.username, "", profileData.role || role, true);
       setAuthState(true);
+      await refreshAllData();
       const headerUser = document.getElementById("headerUsernameDisplay");
       if (headerUser) headerUser.textContent = profileData.username.charAt(0).toUpperCase() + profileData.username.slice(1);
       Swal.fire({ icon: "success", title: "Login Successful", text: `Welcome ${profileData.username}.`, background: "#0f172a", color: "#f8fafc", timer: 1200, showConfirmButton: false });
